@@ -17,9 +17,9 @@ done
 DIST_DIFF="${DIST_DIFF:-dist-diff2-0.9.1-jar-with-dependencies.jar}"
 WORKSPACE="${WORKSPACE:-/tmp/maven_repo_diff}"
 
-if [[ $# < 2 ]]; then
+if [ "$A_ZIP" == "" ] || [ "$B_ZIP" == "" ]; then
   echo "Usage:"
-  echo "     sh jar_diff.sh -a <A.zip> -b <B.zip> [-d <DIST_DIFF>] [-w <WORKSPACE>]"
+  echo "     sh maven_repo_diff.sh -a <a.zip> -b <b.zip> [-d <dist_diff>] [-w <workspace_dir>]"
   exit 1
 fi
 
