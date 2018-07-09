@@ -2,6 +2,8 @@
 
 DIFFERS=()
 NOT_FOUND=()
+CHECKED=()
+ADDITIONAL_FOUND=()
 
 while getopts a:b:d:w: option
 do
@@ -74,6 +76,9 @@ for path in $(find $WORKSPACE/a -name "*.jar"); do
      continue
   fi
 
+  # Store that the file was checked
+  CHECKED+=($(basename $service_pack_jar))
+
   # Compare md5sums
   a_sum=`md5sum $path | awk '{ print $1 }'`
   b_sum=`md5sum $service_pack_jar | awk '{ print $1 }'`
@@ -100,13 +105,34 @@ for path in $(find $WORKSPACE/a -name "*.jar"); do
   fi
 done 
 
+# Goes through <B_dir> and looks for jar files
+for path in $(find $WORKSPACE/b -name "*.jar"); do
+  jar=$(basename $path)
+  found=0
+
+  for checked in "${CHECKED[@]}"; do
+    if [[ "$jar" == "$checked" ]]; then
+      found=1
+      break
+    fi
+  done
+
+  if [[ "$found" == "0" ]]; then
+     ADDITIONAL_FOUND+=($(basename $path))
+  fi
+done
+
 echo
 echo Different:
 printf "\t%s\n"  "${DIFFERS[@]}"
 
 echo
-echo Not Found: 
+echo Not Found in `basename $B_ZIP`:
 printf "\t%s\n"  "${NOT_FOUND[@]}"
+
+echo
+echo Additional files in `basename $B_ZIP`:
+printf "\t%s\n"  "${ADDITIONAL_FOUND[@]}"
 
 # Clean up the WORKSPACE directory 
 rm -rf $WORKSPACE/*
