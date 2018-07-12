@@ -131,8 +131,63 @@ echo Not Found in `basename $B_ZIP`:
 printf "\t%s\n"  "${NOT_FOUND[@]}"
 
 echo
-echo Additional files in `basename $B_ZIP`:
+echo Additional Files in `basename $B_ZIP`:
 printf "\t%s\n"  "${ADDITIONAL_FOUND[@]}"
 
 # Clean up the WORKSPACE directory 
 rm -rf $WORKSPACE/*
+
+# Prepare report
+failures=0
+f=$WORKSPACE/TEST-report.xml
+
+if [[ ${#DIFFERS[@]} > 0 ]]; then
+  failures=$(($failures + 1))
+fi
+
+if [[ ${#NOT_FOUND[@]} > 0 ]]; then
+  failures=$(($failures + 1))
+fi
+
+if [[ ${#ADDITIONAL_FOUND[@]} > 0 ]]; then
+  failures=$(($failures + 1))
+fi
+
+echo '<testsuite name="JWS maven diff" time="0" tests="3" errors="0" skipped="0" failures="'$failures'">' > $f
+echo '  <testcase name="Different Packages" time="0">' >> $f
+
+if [[ ${#DIFFERS[@]} > 0 ]]; then
+  echo '    <failure message="Archives differ in some packages">' >> $f
+  for diff in "${!DIFFERS[@]}"; do
+    echo '      '"${DIFFERS[$diff]}" >> $f
+  done
+  echo '    </failure>' >> $f
+fi
+
+echo '  </testcase>' >> $f
+echo '  <testcase name="Not Found" time="0">' >> $f
+
+if [[ ${#NOT_FOUND[@]} > 0 ]]; then
+  echo '    <failure message="Not Found in '`basename $B_ZIP`'">' >> $f
+  for not in "${!NOT_FOUND[@]}"; do
+    echo '      '"${NOT_FOUND[$not]}" >> $f
+  done
+  echo '    </failure>' >> $f
+fi
+
+echo '  </testcase>' >> $f
+echo '  <testcase name="Additional Found" time="0">' >> $f
+
+if [[ ${#ADDITIONAL_FOUND[@]} > 0 ]]; then
+  echo '    <failure message="Additional Files in '`basename $B_ZIP`'">' >> $f
+  for not in "${!ADDITIONAL_FOUND[@]}"; do
+    echo '      '"${ADDITIONAL_FOUND[$not]}" >> $f
+  done
+  echo '    </failure>' >> $f
+fi
+
+echo '  </testcase>' >> $f
+echo '</testsuite>' >> $f
+
+echo
+echo Report stored to $f
