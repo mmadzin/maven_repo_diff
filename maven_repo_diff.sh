@@ -153,7 +153,7 @@ if [[ ${#ADDITIONAL_FOUND[@]} > 0 ]]; then
   failures=$(($failures + 1))
 fi
 
-echo '<testsuite name="JWS maven diff" time="0" tests="3" errors="0" skipped="0" failures="'$failures'">' > $f
+echo '<testsuite name="Maven diff" time="0" tests="3" errors="0" skipped="0" failures="'$failures'">' > $f
 echo '  <testcase name="Different Packages" time="0">' >> $f
 
 if [[ ${#DIFFERS[@]} > 0 ]]; then
@@ -165,7 +165,7 @@ if [[ ${#DIFFERS[@]} > 0 ]]; then
 fi
 
 echo '  </testcase>' >> $f
-echo '  <testcase name="Not Found" time="0">' >> $f
+echo '  <testcase name="Missing Packages" time="0">' >> $f
 
 if [[ ${#NOT_FOUND[@]} > 0 ]]; then
   echo '    <failure message="Not Found in '`basename $B_ZIP`'">' >> $f
@@ -176,7 +176,7 @@ if [[ ${#NOT_FOUND[@]} > 0 ]]; then
 fi
 
 echo '  </testcase>' >> $f
-echo '  <testcase name="Additional Found" time="0">' >> $f
+echo '  <testcase name="Additional Packages" time="0">' >> $f
 
 if [[ ${#ADDITIONAL_FOUND[@]} > 0 ]]; then
   echo '    <failure message="Additional Files in '`basename $B_ZIP`'">' >> $f
