@@ -25,11 +25,27 @@ if [ "$A_ZIP" == "" ] || [ "$B_ZIP" == "" ]; then
   exit 1
 fi
 
+is_dist_diff_relevant () {
+  relevant_changes=0
+  
+  relevant_changes=$(($relevant_changes + $(cat $1 | grep -c "Added methods:") ))
+  relevant_changes=$(($relevant_changes + $(cat $1 | grep -c "Added fields:") ))
+  relevant_changes=$(($relevant_changes + $(cat $1 | grep -c "Field modifiers changes:") ))
+  relevant_changes=$(($relevant_changes + $(cat $1 | grep -c "Decompiled source diff:") ))
+  
+  if [[ $relevant_changes > 0 ]]; then
+    return 0
+  else 
+    return 1
+  fi
+}
+
 A_MAVEN_REPO_NAME=`unzip -l $A_ZIP | sed -n 's/.*\(jboss-web-server-.*-maven-repository\)\/$/\1/p'`
 B_MAVEN_REPO_NAME=`unzip -l $B_ZIP | sed -n 's/.*\(jboss-web-server-.*-maven-repository\)\/$/\1/p'`
 
 mkdir -p $WORKSPACE
-rm -rf $WORKSPACE/*
+rm -rf $WORKSPACE/folderA $WORKSPACE/folderB $WORKSPACE/a $WORKSPACE/b 
+rm -rf $WORKSPACE/TEST-report.xml $WORKSPACE/DIFFERENCE_*
 
 mkdir $WORKSPACE/a $WORKSPACE/b
 
@@ -97,11 +113,16 @@ for path in $(find $WORKSPACE/a -name "*.jar"); do
   cp $service_pack_jar $b_dir/$jar
 
   # Dist diff
+  output_dir=$WORKSPACE/"dist_diff_output"
   cp $DIST_DIFF $WORKSPACE
-  diff_jar=`java -jar $WORKSPACE/$(basename $DIST_DIFF) -a $a_dir -b $b_dir -d | grep "DIFFERENT"`
+
+  diff_jar=`java -jar $WORKSPACE/$(basename $DIST_DIFF) -a $a_dir -b $b_dir -o $output_dir -d | grep "DIFFERENT"`
   
   if [[ "$diff_jar" != "" ]]; then 
-    DIFFERS+=($(basename $path))
+    if is_dist_diff_relevant $output_dir"/dist-diff2-output.html"; then
+      DIFFERS+=($(basename $path))
+      cp $output_dir"/dist-diff2-output.html" $WORKSPACE"/DIFFERENCE_"`basename $path`".html"
+    fi
   fi
 done 
 
@@ -135,7 +156,7 @@ echo Additional Files in `basename $B_ZIP`:
 printf "\t%s\n"  "${ADDITIONAL_FOUND[@]}"
 
 # Clean up the WORKSPACE directory 
-rm -rf $WORKSPACE/*
+rm -rf $WORKSPACE/folderA $WORKSPACE/folderB $WORKSPACE/a $WORKSPACE/b $WORKSPACE/output
 
 # Prepare report
 failures=0
