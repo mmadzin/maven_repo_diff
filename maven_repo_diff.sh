@@ -40,8 +40,8 @@ is_dist_diff_relevant () {
   fi
 }
 
-A_MAVEN_REPO_NAME=`unzip -l $A_ZIP | sed -n 's/.*\(jboss-web-server-.*-maven-repository\)\/$/\1/p'`
-B_MAVEN_REPO_NAME=`unzip -l $B_ZIP | sed -n 's/.*\(jboss-web-server-.*-maven-repository\)\/$/\1/p'`
+A_MAVEN_REPO_NAME=`unzip -l $A_ZIP | sed -n 's/.*\(jws-.*-maven-repository\)\/$/\1/p'`
+B_MAVEN_REPO_NAME=`unzip -l $B_ZIP | sed -n 's/.*\(jws-.*-maven-repository\)\/$/\1/p'`
 
 mkdir -p $WORKSPACE
 rm -rf $WORKSPACE/folderA $WORKSPACE/folderB $WORKSPACE/a $WORKSPACE/b 
